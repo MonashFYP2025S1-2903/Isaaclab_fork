@@ -108,11 +108,11 @@ class ObservationsCfg:
 
         def __post_init__(self):
             self.enable_corruption = True
-            self.concatenate_terms = False
+            self.concatenate_terms = True
    
     
     @configclass
-    class ImageCfg(ObsGroup):
+    class RGBCfg(ObsGroup):
         """Observations for image group."""
         image = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "rgb"})
         image1 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_ext1"), "data_type": "rgb"})
@@ -120,14 +120,72 @@ class ObservationsCfg:
         image3 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_bird"), "data_type": "rgb"})
         
         def __post_init__(self):
-            self.enable_corruption = True
+            self.enable_corruption = False
+            self.concatenate_terms = False
+    
+
+    @configclass
+    class DepthCfg(ObsGroup):
+        """Observations for depth group."""
+        image = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "depth"})
+        image1 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_ext1"), "data_type": "depth"})
+        image2 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_ext2"), "data_type": "depth"})
+        image3 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_bird"), "data_type": "depth"})
+        
+        def __post_init__(self):
+            self.enable_corruption = False
+            self.concatenate_terms = False
+
+    @configclass
+    class SemanticCfg(ObsGroup):
+        """Observations for semantic group."""
+        image = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera"), "data_type": "semantic_segmentation"})
+        image1 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_ext1"), "data_type": "semantic_segmentation"})
+        image2 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_ext2"), "data_type": "semantic_segmentation"})
+        image3 = ObsTerm(func=mdp.image, params={"sensor_cfg": SceneEntityCfg("camera_bird"), "data_type": "semantic_segmentation"})
+
+        def __post_init__(self):
+            self.enable_corruption = False
+            self.concatenate_terms = False
+
+    @configclass
+    class PrefLogCfg(ObsGroup):
+        """Observations for preflog group - position logging for manual reward evaluation."""
+    
+        # Log positions used in reward functions
+        object_position = ObsTerm(func=mdp.log_object_position, params={"object_cfg": SceneEntityCfg("object")})
+        ee_position = ObsTerm(func=mdp.log_ee_position, params={"ee_frame_cfg": SceneEntityCfg("ee_frame")})
+        goal_position = ObsTerm(
+            func=mdp.log_goal_position, 
+            params={"command_name": "object_pose", "robot_cfg": SceneEntityCfg("robot")}
+        )
+
+        # Log joint velocities used in reward functions
+        joint_velocities = ObsTerm(func=mdp.log_joint_velocities, params={"asset_cfg": SceneEntityCfg("robot")})
+        # Log actions used in reward functions
+        current_action = ObsTerm(func=mdp.log_current_action)
+        previous_action = ObsTerm(func=mdp.log_previous_action)
+        action_difference = ObsTerm(func=mdp.log_action_difference)
+
+        # Log observations
+        obs_joint_pos = ObsTerm(func=mdp.joint_pos_rel)
+        obs_joint_vel = ObsTerm(func=mdp.joint_vel_rel)
+        obs_object_position = ObsTerm(func=mdp.object_position_in_robot_root_frame)
+        obs_target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
+        obs_actions = ObsTerm(func=mdp.last_action)
+
+        def __post_init__(self):
+            self.enable_corruption = False
             self.concatenate_terms = False
     
 
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
-    image: ImageCfg = ImageCfg()
+    rgb: RGBCfg = RGBCfg()
+    depth: DepthCfg = DepthCfg()
+    semantic: SemanticCfg = SemanticCfg()
+    preflog: PrefLogCfg = PrefLogCfg()
 
 
 @configclass
@@ -227,7 +285,7 @@ class LiftCameraEnvCfg(ManagerBasedRLEnvCfg):
         self.decimation = 2
         self.episode_length_s = 5.0
         # simulation settings
-        self.sim.dt = 0.01  # 100Hz
+        self.sim.dt = 1/60  # 60Hz
         self.sim.render_interval = self.decimation
         
         self.sim.physx.bounce_threshold_velocity = 0.2
