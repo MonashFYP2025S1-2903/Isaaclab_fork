@@ -341,8 +341,9 @@ def image(
     if normalize:
         if data_type == "rgb":
             images = images.float() / 255.0
-            mean_tensor = torch.mean(images, dim=(1, 2), keepdim=True)
-            images -= mean_tensor
+            # make images brighter
+            # mean_tensor = torch.mean(images, dim=(1, 2), keepdim=True)
+            # images -= mean_tensor
         elif "distance_to" in data_type or "depth" in data_type:
             images[images == float("inf")] = 0
 
