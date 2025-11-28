@@ -319,8 +319,13 @@ def main():
             env.unwrapped.sim.render()
             sensor.reset()
             sensor.update(dt=0, force_recompute=True) 
+            sensor1.reset()
+            sensor1.update(dt=0, force_recompute=True) 
+            sensor2.reset()
+            sensor2.update(dt=0, force_recompute=True)
+            sensor3.reset()
+            sensor3.update(dt=0, force_recompute=True)
             obs,infos = env.get_observations()
-            import pdb; pdb.set_trace()
             semantic_object = infos['observations']['semantic']['image']
             semantic1_object = infos['observations']['semantic']['image1']
             semantic2_object = infos['observations']['semantic']['image2']
@@ -340,6 +345,12 @@ def main():
             env.unwrapped.sim.render()
             sensor.reset()
             sensor.update(dt=0, force_recompute=True) 
+            sensor1.reset()
+            sensor1.update(dt=0, force_recompute=True) 
+            sensor2.reset()
+            sensor2.update(dt=0, force_recompute=True)
+            sensor3.reset()
+            sensor3.update(dt=0, force_recompute=True)
             obs,infos = env.get_observations()
             semantic_robot = infos['observations']['semantic']['image']
             semantic1_robot = infos['observations']['semantic']['image1']
